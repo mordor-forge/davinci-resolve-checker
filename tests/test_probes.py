@@ -145,3 +145,52 @@ class TestProbeOpenCL:
             from davinci_resolve_checker.probes.opencl import probe_opencl_platforms
 
             assert probe_opencl_platforms() == []
+
+
+class TestProbeSystem:
+    def test_probe_system_integrates_all_probes(self):
+        with (
+            patch(
+                "davinci_resolve_checker.probes.probe_chassis",
+                return_value=ChassisType.DESKTOP,
+            ),
+            patch(
+                "davinci_resolve_checker.probes.probe_distro",
+                return_value=("arch", "Arch Linux"),
+            ),
+            patch(
+                "davinci_resolve_checker.probes.probe_opencl_drivers",
+                return_value=["opencl-nvidia"],
+            ),
+            patch(
+                "davinci_resolve_checker.probes.probe_opencl_nvidia_installed",
+                return_value=True,
+            ),
+            patch(
+                "davinci_resolve_checker.probes.probe_installed_dr_package",
+                return_value="davinci-resolve 19.0-1",
+            ),
+            patch(
+                "davinci_resolve_checker.probes.probe_package_versions",
+                return_value={},
+            ),
+            patch(
+                "davinci_resolve_checker.probes.probe_roc_enable_pre_vega",
+                return_value=False,
+            ),
+            patch("davinci_resolve_checker.probes.probe_gpus", return_value=[]),
+            patch(
+                "davinci_resolve_checker.probes.probe_gl_info",
+                return_value=("NVIDIA Corporation", "RTX 2070"),
+            ),
+            patch(
+                "davinci_resolve_checker.probes.probe_opencl_platforms",
+                return_value=[],
+            ),
+        ):
+            from davinci_resolve_checker.probes import probe_system
+
+            state = probe_system()
+            assert state.distro_id == "arch"
+            assert state.chassis == ChassisType.DESKTOP
+            assert state.gl_vendor == "NVIDIA Corporation"
