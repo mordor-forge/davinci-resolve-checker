@@ -40,6 +40,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "S", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
+"src/davinci_resolve_checker/probes/**" = ["S602", "S607"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
