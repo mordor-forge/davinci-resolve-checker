@@ -1,0 +1,18 @@
+requires = ["tox-uv>=1.25"]
+env_list = ["py310", "py311", "py312", "py313", "lint", "audit"]
+
+[env_run_base]
+runner = "uv-venv-runner"
+deps = ["pytest", "pytest-cov", "pytest-mock"]
+commands = [["pytest", "--cov", "--cov-fail-under=100", "-v"]]
+
+[env.lint]
+deps = ["ruff"]
+commands = [
+    ["ruff", "check", "src/", "tests/"],
+    ["ruff", "format", "--check", "src/", "tests/"],
+]
+
+[env.audit]
+deps = ["pip-audit"]
+commands = [["pip-audit"]]
