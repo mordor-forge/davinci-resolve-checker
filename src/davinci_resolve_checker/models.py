@@ -58,6 +58,10 @@ class ChassisType(str, Enum):
             ChassisType.SPACE_SAVING,
             ChassisType.CONVERTIBLE,
             ChassisType.PORTABLE,
+            ChassisType.TABLET,
+            ChassisType.DETACHABLE,
+            ChassisType.HAND_HELD,
+            ChassisType.SUB_NOTEBOOK,
         }
 
     @property

@@ -86,6 +86,12 @@ class TestCheckGPUPresence:
         results = check_gpu_presence(state)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
+    def test_multiple_amd_gpus_warns(self):
+        amd2 = AMD_NAVI_GPU.model_copy(update={"pci_slot": "0000:02:00.0"})
+        state = _make_state(gpus=[AMD_NAVI_GPU, amd2])
+        results = check_gpu_presence(state)
+        assert any(r.status == CheckStatus.WARNING and "AMD" in r.message for r in results)
+
 
 class TestCheckGPUConflict:
     def test_amd_and_nvidia(self):

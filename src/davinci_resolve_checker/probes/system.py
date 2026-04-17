@@ -63,6 +63,7 @@ def probe_opencl_drivers() -> list[str]:
         shell=True,
         capture_output=True,
         text=True,
+        timeout=10,
     )
     if result.returncode != 0 or not result.stdout.strip():
         return []
@@ -75,6 +76,7 @@ def probe_opencl_nvidia_installed() -> bool:
         shell=True,
         capture_output=True,
         text=True,
+        timeout=10,
     )
     return bool(result.stdout.strip())
 
@@ -85,6 +87,7 @@ def probe_installed_dr_package() -> str | None:
         shell=True,
         capture_output=True,
         text=True,
+        timeout=10,
     )
     output = result.stdout.strip()
     return output if output else None
@@ -98,6 +101,7 @@ def probe_package_versions(packages: list[str]) -> dict[str, str]:
             shell=True,
             capture_output=True,
             text=True,
+            timeout=10,
         )
         version = result.stdout.strip()
         if version:

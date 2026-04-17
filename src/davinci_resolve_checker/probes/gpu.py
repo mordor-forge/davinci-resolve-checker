@@ -43,12 +43,14 @@ def probe_gl_info() -> tuple[str, str]:
             shell=True,
             capture_output=True,
             text=True,
+            timeout=10,
         )
         renderer_result = subprocess.run(
             "glxinfo | grep -i 'OpenGL renderer' | cut -f2 -d ':' | xargs",
             shell=True,
             capture_output=True,
             text=True,
+            timeout=10,
         )
         vendor = vendor_result.stdout.strip() if vendor_result.returncode == 0 else ""
         renderer = renderer_result.stdout.strip() if renderer_result.returncode == 0 else ""

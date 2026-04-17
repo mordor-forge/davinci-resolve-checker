@@ -29,6 +29,10 @@ class TestChassisType:
             ChassisType.SPACE_SAVING,
             ChassisType.CONVERTIBLE,
             ChassisType.PORTABLE,
+            ChassisType.TABLET,
+            ChassisType.DETACHABLE,
+            ChassisType.HAND_HELD,
+            ChassisType.SUB_NOTEBOOK,
         ],
     )
     def test_mobile_types(self, chassis: ChassisType):

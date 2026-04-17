@@ -60,6 +60,14 @@ def check_gpu_presence(state: SystemState) -> list[CheckResult]:
             )
         )
 
+    if len(amd_gpus) > 1:
+        results.append(
+            CheckResult(
+                status=CheckStatus.WARNING,
+                message="Multiple AMD GPUs detected. Only the first will be checked.",
+            )
+        )
+
     if not amd_gpus and not nvidia_gpus:
         results.append(
             CheckResult(

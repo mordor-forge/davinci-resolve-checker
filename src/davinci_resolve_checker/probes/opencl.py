@@ -13,6 +13,7 @@ def probe_opencl_platforms() -> list[OpenCLPlatform]:
             shell=True,
             capture_output=True,
             text=True,
+            timeout=10,
         )
         if result.returncode != 0 or not result.stdout.strip():
             return []
