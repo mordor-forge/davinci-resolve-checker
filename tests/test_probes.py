@@ -76,14 +76,159 @@ class TestProbeRocEnablePreVega:
             assert probe_roc_enable_pre_vega() is False
 
 
+class TestProbeOpenCLNvidiaInstalled:
+    def test_installed(self):
+        with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(
+                args="", returncode=0, stdout="opencl-nvidia\n"
+            )
+
+            from davinci_resolve_checker.probes.system import probe_opencl_nvidia_installed
+
+            assert probe_opencl_nvidia_installed() is True
+
+    def test_not_installed(self):
+        with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
+
+            from davinci_resolve_checker.probes.system import probe_opencl_nvidia_installed
+
+            assert probe_opencl_nvidia_installed() is False
+
+
+class TestProbeInstalledDrPackage:
+    def test_installed(self):
+        with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(
+                args="", returncode=0, stdout="davinci-resolve 19.0-1\n"
+            )
+
+            from davinci_resolve_checker.probes.system import probe_installed_dr_package
+
+            assert probe_installed_dr_package() == "davinci-resolve 19.0-1"
+
+    def test_not_installed(self):
+        with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
+
+            from davinci_resolve_checker.probes.system import probe_installed_dr_package
+
+            assert probe_installed_dr_package() is None
+
+
+class TestProbePackageVersions:
+    def test_found(self):
+        with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(args="", returncode=0, stdout="6.1.0\n")
+
+            from davinci_resolve_checker.probes.system import probe_package_versions
+
+            versions = probe_package_versions(["opencl-amd"])
+            assert versions == {"opencl-amd": "6.1.0"}
+
+    def test_not_found(self):
+        with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
+
+            from davinci_resolve_checker.probes.system import probe_package_versions
+
+            assert probe_package_versions(["nonexistent"]) == {}
+
+
+class TestProbeGPUs:
+    def test_probe_gpus_filters_non_gpu(self):
+        from unittest.mock import MagicMock
+
+        mock_device = MagicMock()
+        mock_device.cls.id = 0x0200
+        mock_device.driver = "some-net-driver"
+
+        with patch("davinci_resolve_checker.probes.gpu.VerboseParser") as mock_parser:
+            mock_parser.return_value.run.return_value = [mock_device]
+
+            from davinci_resolve_checker.probes.gpu import probe_gpus
+
+            gpus = probe_gpus()
+            assert gpus == []
+
+    def test_probe_gpus_filters_vfio(self):
+        from unittest.mock import MagicMock
+
+        mock_device = MagicMock()
+        mock_device.cls.id = 0x0300
+        mock_device.driver = "vfio-pci"
+
+        with patch("davinci_resolve_checker.probes.gpu.VerboseParser") as mock_parser:
+            mock_parser.return_value.run.return_value = [mock_device]
+
+            from davinci_resolve_checker.probes.gpu import probe_gpus
+
+            gpus = probe_gpus()
+            assert gpus == []
+
+    def test_probe_gpus_filters_unknown_vendor(self):
+        from unittest.mock import MagicMock
+
+        mock_device = MagicMock()
+        mock_device.cls.id = 0x0300
+        mock_device.driver = "some-driver"
+        mock_device.vendor.name = "Matrox Electronics Systems Ltd."
+
+        with patch("davinci_resolve_checker.probes.gpu.VerboseParser") as mock_parser:
+            mock_parser.return_value.run.return_value = [mock_device]
+
+            from davinci_resolve_checker.probes.gpu import probe_gpus
+
+            gpus = probe_gpus()
+            assert gpus == []
+
+    def test_probe_gpus_valid_nvidia(self):
+        from unittest.mock import MagicMock
+
+        mock_device = MagicMock()
+        mock_device.cls.id = 0x0300
+        mock_device.driver = "nvidia"
+        mock_device.vendor.name = "NVIDIA Corporation"
+        mock_device.device.name = "RTX 2070 SUPER"
+        mock_device.kernel_modules = ["nvidia"]
+        mock_device.slot = "0000:01:00.0"
+
+        with patch("davinci_resolve_checker.probes.gpu.VerboseParser") as mock_parser:
+            mock_parser.return_value.run.return_value = [mock_device]
+
+            from davinci_resolve_checker.probes.gpu import probe_gpus
+
+            gpus = probe_gpus()
+            assert len(gpus) == 1
+            assert gpus[0].name == "RTX 2070 SUPER"
+
+    def test_probe_gpus_no_kernel_modules(self):
+        from unittest.mock import MagicMock
+
+        mock_device = MagicMock()
+        mock_device.cls.id = 0x0300
+        mock_device.driver = "nvidia"
+        mock_device.vendor.name = "NVIDIA Corporation"
+        mock_device.device.name = "RTX 2070"
+        mock_device.kernel_modules = None
+        mock_device.slot = "0000:01:00.0"
+
+        with patch("davinci_resolve_checker.probes.gpu.VerboseParser") as mock_parser:
+            mock_parser.return_value.run.return_value = [mock_device]
+
+            from davinci_resolve_checker.probes.gpu import probe_gpus
+
+            gpus = probe_gpus()
+            assert len(gpus) == 1
+            assert gpus[0].kernel_modules == []
+
+
 class TestProbeGLInfo:
     def test_probe_gl_info(self):
         with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
             mock_run.side_effect = [
                 CompletedProcess(args="", returncode=0, stdout=" NVIDIA Corporation\n"),
-                CompletedProcess(
-                    args="", returncode=0, stdout="NVIDIA GeForce RTX 2070 SUPER\n"
-                ),
+                CompletedProcess(args="", returncode=0, stdout="NVIDIA GeForce RTX 2070 SUPER\n"),
             ]
 
             from davinci_resolve_checker.probes.gpu import probe_gl_info
@@ -91,6 +236,16 @@ class TestProbeGLInfo:
             vendor, renderer = probe_gl_info()
             assert vendor == "NVIDIA Corporation"
             assert renderer == "NVIDIA GeForce RTX 2070 SUPER"
+
+    def test_probe_gl_info_exception(self):
+        with patch(
+            "davinci_resolve_checker.probes.gpu.subprocess.run", side_effect=OSError("boom")
+        ):
+            from davinci_resolve_checker.probes.gpu import probe_gl_info
+
+            vendor, renderer = probe_gl_info()
+            assert vendor == ""
+            assert renderer == ""
 
     def test_probe_gl_info_missing_glxinfo(self):
         with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
@@ -141,6 +296,14 @@ class TestProbeOpenCL:
     def test_probe_opencl_platforms_failure(self):
         with patch("davinci_resolve_checker.probes.opencl.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
+
+            from davinci_resolve_checker.probes.opencl import probe_opencl_platforms
+
+            assert probe_opencl_platforms() == []
+
+    def test_probe_opencl_platforms_bad_json(self):
+        with patch("davinci_resolve_checker.probes.opencl.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(args="", returncode=0, stdout="not valid json")
 
             from davinci_resolve_checker.probes.opencl import probe_opencl_platforms
 

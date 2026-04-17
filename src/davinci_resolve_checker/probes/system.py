@@ -7,9 +7,7 @@ import distro
 
 from davinci_resolve_checker.models import ChassisType
 
-CHASSIS_CODE_MAP: dict[str, ChassisType] = {
-    str(i + 1): ct for i, ct in enumerate(ChassisType)
-}
+CHASSIS_CODE_MAP: dict[str, ChassisType] = {str(i + 1): ct for i, ct in enumerate(ChassisType)}
 
 
 def probe_chassis() -> ChassisType:

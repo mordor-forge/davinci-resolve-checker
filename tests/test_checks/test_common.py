@@ -23,9 +23,7 @@ from tests.conftest import (
 
 
 class TestCheckDistro:
-    @pytest.mark.parametrize(
-        "distro_id", ["arch", "manjaro", "endeavouros", "garuda", "cachyos"]
-    )
+    @pytest.mark.parametrize("distro_id", ["arch", "manjaro", "endeavouros", "garuda", "cachyos"])
     def test_supported_distros(self, distro_id: str):
         state = _make_state(distro_id=distro_id)
         results = check_distro(state)
