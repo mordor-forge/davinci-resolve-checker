@@ -14,7 +14,6 @@ def mock_probe_and_checks():
     state = _make_state(distro_id="arch", distro_name="Arch Linux")
 
     with (
-        patch("davinci_resolve_checker.cli.setup_i18n"),
         patch("davinci_resolve_checker.cli.probe_system", return_value=state),
         patch(
             "davinci_resolve_checker.cli.run_all_checks",
@@ -33,7 +32,6 @@ class TestCLI:
     def test_fail_exits_nonzero(self):
         state = _make_state()
         with (
-            patch("davinci_resolve_checker.cli.setup_i18n"),
             patch("davinci_resolve_checker.cli.probe_system", return_value=state),
             patch(
                 "davinci_resolve_checker.cli.run_all_checks",

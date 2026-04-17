@@ -26,9 +26,6 @@ davinci-resolve-checker --json
 
 # Stop after first failure
 davinci-resolve-checker --fail-fast
-
-# Override locale
-davinci-resolve-checker --locale it_IT
 ```
 
 ### Flags
@@ -38,7 +35,6 @@ davinci-resolve-checker --locale it_IT
 | `--pro` | Check for AMD proprietary stack compatibility |
 | `--fail-fast` | Stop after first failure |
 | `--json` | Machine-readable JSON output |
-| `--locale LOCALE` | Override output language |
 
 ### Exit Codes
 
