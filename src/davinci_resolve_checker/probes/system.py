@@ -7,7 +7,44 @@ import distro
 
 from davinci_resolve_checker.models import ChassisType
 
-CHASSIS_CODE_MAP: dict[str, ChassisType] = {str(i + 1): ct for i, ct in enumerate(ChassisType)}
+CHASSIS_CODE_MAP: dict[str, ChassisType] = {
+    "1": ChassisType.OTHER,
+    "2": ChassisType.UNKNOWN,
+    "3": ChassisType.DESKTOP,
+    "4": ChassisType.LOW_PROFILE_DESKTOP,
+    "5": ChassisType.PIZZA_BOX,
+    "6": ChassisType.MINI_TOWER,
+    "7": ChassisType.TOWER,
+    "8": ChassisType.PORTABLE,
+    "9": ChassisType.LAPTOP,
+    "10": ChassisType.NOTEBOOK,
+    "11": ChassisType.HAND_HELD,
+    "12": ChassisType.DOCKING_STATION,
+    "13": ChassisType.ALL_IN_ONE,
+    "14": ChassisType.SUB_NOTEBOOK,
+    "15": ChassisType.SPACE_SAVING,
+    "16": ChassisType.LUNCH_BOX,
+    "17": ChassisType.MAIN_SERVER_CHASSIS,
+    "18": ChassisType.EXPANSION_CHASSIS,
+    "19": ChassisType.SUBCHASSIS,
+    "20": ChassisType.BUS_EXPANSION_CHASSIS,
+    "21": ChassisType.PERIPHERAL_CHASSIS,
+    "22": ChassisType.RAID_CHASSIS,
+    "23": ChassisType.RACK_MOUNT_CHASSIS,
+    "24": ChassisType.SEALED_CASE_PC,
+    "25": ChassisType.MULTI_SYSTEM_CHASSIS,
+    "26": ChassisType.COMPACT_PCI,
+    "27": ChassisType.ADVANCED_TCA,
+    "28": ChassisType.BLADE,
+    "29": ChassisType.BLADE_ENCLOSURE,
+    "30": ChassisType.TABLET,
+    "31": ChassisType.CONVERTIBLE,
+    "32": ChassisType.DETACHABLE,
+    "33": ChassisType.IOT_GATEWAY,
+    "34": ChassisType.EMBEDDED_PC,
+    "35": ChassisType.MINI_PC,
+    "36": ChassisType.STICK_PC,
+}
 
 
 def probe_chassis() -> ChassisType:

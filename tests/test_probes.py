@@ -45,13 +45,13 @@ class TestProbeOpenCLDrivers:
             mock_run.return_value = CompletedProcess(
                 args="",
                 returncode=0,
-                stdout="opencl-nvidia 560.35.03-1\nrocm-opencl-runtime 6.1.0-1\n",
+                stdout="opencl-nvidia\nrocm-opencl-runtime\n",
             )
 
             from davinci_resolve_checker.probes.system import probe_opencl_drivers
 
             drivers = probe_opencl_drivers()
-            assert drivers == ["opencl-nvidia 560.35.03-1", "rocm-opencl-runtime 6.1.0-1"]
+            assert drivers == ["opencl-nvidia", "rocm-opencl-runtime"]
 
     def test_probe_opencl_drivers_none_found(self):
         with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:

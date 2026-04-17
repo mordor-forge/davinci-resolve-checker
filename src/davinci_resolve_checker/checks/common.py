@@ -79,6 +79,7 @@ def check_gpu_conflict(state: SystemState) -> list[CheckResult]:
             CheckResult(
                 status=CheckStatus.FAIL,
                 message="Both AMD and NVIDIA GPUs detected. This configuration is not supported.",
+                suggestion="Remove one GPU, or pass through one via VFIO for VM use.",
             )
         ]
     return []

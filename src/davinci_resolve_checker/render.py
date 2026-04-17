@@ -17,8 +17,8 @@ STATUS_STYLES = {
 
 def render_json(state: SystemState, results: list[CheckResult]) -> None:
     output = {
-        "system": json.loads(state.model_dump_json()),
-        "results": [json.loads(r.model_dump_json()) for r in results],
+        "system": state.model_dump(mode="json"),
+        "results": [r.model_dump(mode="json") for r in results],
     }
     print(json.dumps(output, indent=2))
 
