@@ -74,3 +74,74 @@ class TestProbeRocEnablePreVega:
 
         with patch.dict("os.environ", {}, clear=True):
             assert probe_roc_enable_pre_vega() is False
+
+
+class TestProbeGLInfo:
+    def test_probe_gl_info(self):
+        with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
+            mock_run.side_effect = [
+                CompletedProcess(args="", returncode=0, stdout=" NVIDIA Corporation\n"),
+                CompletedProcess(
+                    args="", returncode=0, stdout="NVIDIA GeForce RTX 2070 SUPER\n"
+                ),
+            ]
+
+            from davinci_resolve_checker.probes.gpu import probe_gl_info
+
+            vendor, renderer = probe_gl_info()
+            assert vendor == "NVIDIA Corporation"
+            assert renderer == "NVIDIA GeForce RTX 2070 SUPER"
+
+    def test_probe_gl_info_missing_glxinfo(self):
+        with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
+
+            from davinci_resolve_checker.probes.gpu import probe_gl_info
+
+            vendor, renderer = probe_gl_info()
+            assert vendor == ""
+            assert renderer == ""
+
+
+class TestProbeOpenCL:
+    def test_probe_opencl_platforms(self):
+        import json as json_mod
+
+        clinfo_data = {
+            "platforms": [
+                {
+                    "CL_PLATFORM_NAME": "NVIDIA CUDA",
+                    "CL_PLATFORM_ICD_SUFFIX_KHR": "NVIDIA",
+                    "CL_PLATFORM_EXTENSIONS": "cl_khr_icd",
+                },
+            ],
+            "devices": [
+                {
+                    "online": [
+                        {"CL_DEVICE_NAME": "NVIDIA GeForce RTX 2070 SUPER"},
+                    ],
+                },
+            ],
+        }
+
+        with patch("davinci_resolve_checker.probes.opencl.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(
+                args="",
+                returncode=0,
+                stdout=json_mod.dumps(clinfo_data),
+            )
+
+            from davinci_resolve_checker.probes.opencl import probe_opencl_platforms
+
+            platforms = probe_opencl_platforms()
+            assert len(platforms) == 1
+            assert platforms[0].name == "NVIDIA CUDA"
+            assert len(platforms[0].devices) == 1
+
+    def test_probe_opencl_platforms_failure(self):
+        with patch("davinci_resolve_checker.probes.opencl.subprocess.run") as mock_run:
+            mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
+
+            from davinci_resolve_checker.probes.opencl import probe_opencl_platforms
+
+            assert probe_opencl_platforms() == []
