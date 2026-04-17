@@ -19,9 +19,25 @@ class TestI18n:
         trans = setup_i18n("xx_XX")
         assert trans is not None
 
+    def test_fallback_to_null_when_no_catalogs(self):
+        with patch(
+            "davinci_resolve_checker.i18n.resources.files",
+            return_value=__import__("pathlib").Path("/nonexistent"),
+        ):
+            trans = setup_i18n("xx_XX")
+            assert trans is not None
+
     def test_gettext_function_works(self):
         setup_i18n("en_US")
         assert hasattr(builtins, "_")
+
+    def test_italian_locale_loads(self):
+        trans = setup_i18n("it_IT")
+        assert trans.gettext("Using locale") == "Usando il locale"
+
+    def test_german_locale_loads(self):
+        trans = setup_i18n("de_DE")
+        assert trans.gettext("All seems good. You should be able to run DaVinci Resolve successfully.") == "Sieht gut aus! Du solltest DaVinci Resolve verwenden können."
 
 
 class TestDetectLocale:
