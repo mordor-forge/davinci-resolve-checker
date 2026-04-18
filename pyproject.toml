@@ -54,7 +54,7 @@ testpaths = ["tests"]
 
 [tool.coverage.run]
 source = ["davinci_resolve_checker"]
-omit = ["src/davinci_resolve_checker/__main__.py"]
+omit = ["*/davinci_resolve_checker/__main__.py"]
 
 [tool.coverage.report]
 fail_under = 100

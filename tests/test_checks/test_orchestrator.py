@@ -60,3 +60,28 @@ class TestRunAllChecks:
         results = run_all_checks(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
         assert all(r.status != CheckStatus.PASS for r in results)
+
+    def test_fail_fast_stops_after_amd_failure(self):
+        state = _make_state(
+            gpus=[AMD_NAVI_GPU],
+            opencl_drivers=[],
+            opencl_platforms=[ROC_PLATFORM],
+            gl_vendor="AMD",
+            gl_renderer="AMD Radeon RX 6600",
+        )
+        results = run_all_checks(state, fail_fast=True)
+        assert len(results) == 1
+        assert results[0].status == CheckStatus.FAIL
+
+    def test_fail_fast_stops_after_nvidia_failure(self):
+        state = _make_state(
+            gpus=[NVIDIA_GPU],
+            opencl_drivers=[],
+            opencl_platforms=[NVIDIA_CL_PLATFORM],
+            opencl_nvidia_installed=False,
+            gl_vendor="NVIDIA Corporation",
+            gl_renderer="NVIDIA GeForce RTX 2070 SUPER/PCIe/SSE2",
+        )
+        results = run_all_checks(state, fail_fast=True)
+        assert len(results) == 1
+        assert results[0].status == CheckStatus.FAIL

@@ -27,8 +27,7 @@ def check_nvidia(state: SystemState, emit_pass: bool = True) -> list[CheckResult
                 status=CheckStatus.FAIL,
                 message="No NVIDIA OpenCL platform detected.",
                 suggestion=(
-                    "Ensure opencl-nvidia is installed "
-                    "and clinfo lists the NVIDIA CUDA platform."
+                    "Ensure opencl-nvidia is installed and clinfo lists the NVIDIA CUDA platform."
                 ),
             )
         )

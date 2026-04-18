@@ -170,8 +170,7 @@ def _check_amd_open(state: SystemState, gpu: GPUDevice) -> list[CheckResult]:
             CheckResult(
                 status=CheckStatus.WARNING,
                 message=(
-                    "AMD GPU codename undetectable. "
-                    "Pre-Vega requirements could not be verified."
+                    "AMD GPU codename undetectable. Pre-Vega requirements could not be verified."
                 ),
                 suggestion="If this is a pre-Vega card, you may still need ROC_ENABLE_PRE_VEGA=1.",
             )

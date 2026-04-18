@@ -10,8 +10,9 @@ from davinci_resolve_checker.checks.common import (
     check_gpu_presence,
     check_opencl_mesa,
     check_opencl_platforms,
+    has_vendor_opencl_platform,
 )
-from davinci_resolve_checker.models import CheckStatus
+from davinci_resolve_checker.models import CheckStatus, GPUVendor
 from tests.conftest import (
     AMD_NAVI_GPU,
     CLOVER_PLATFORM,
@@ -162,3 +163,17 @@ class TestCheckOpenCLPlatforms:
         state = _make_state(opencl_platforms=[POCL_PLATFORM])
         results = check_opencl_platforms(state)
         assert all(r.status != CheckStatus.FAIL for r in results)
+
+
+class TestHasVendorOpenCLPlatform:
+    def test_matches_amd_platform(self):
+        state = _make_state(opencl_platforms=[ROC_PLATFORM])
+        assert has_vendor_opencl_platform(state, GPUVendor.AMD) is True
+
+    def test_matches_nvidia_platform(self):
+        state = _make_state(opencl_platforms=[NVIDIA_CL_PLATFORM])
+        assert has_vendor_opencl_platform(state, GPUVendor.NVIDIA) is True
+
+    def test_generic_vendor_uses_any_usable_platform(self):
+        state = _make_state(opencl_platforms=[POCL_PLATFORM])
+        assert has_vendor_opencl_platform(state, GPUVendor.INTEL) is True
