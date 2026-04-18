@@ -3,7 +3,7 @@ name = "davinci-resolve-checker"
 version = "0.1.0"
 description = "Check system configuration for DaVinci Resolve compatibility on Arch-based Linux"
 readme = "README.md"
-license = "GPL-3.0-only"
+license = "GPL-3.0"
 requires-python = ">=3.10"
 dependencies = [
     "cyclopts>=3.0",
