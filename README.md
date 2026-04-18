@@ -74,7 +74,7 @@ uv run ruff format --check src/ tests/
 
 ## Credits
 
-This project is a ground-up rewrite of [Ashark/davinci-resolve-checker](https://github.com/Ashark/davinci-resolve-checker). The check logic, GPU codename lists, and OpenCL detection heuristics are derived from the original work. No code was copied verbatim.
+This project is a ground-up rewrite of [Ashark/davinci-resolve-checker](https://github.com/Ashark/davinci-resolve-checker). The check logic, GPU codename lists, and OpenCL detection heuristics are derived from the original work.
 
 ## License
 
