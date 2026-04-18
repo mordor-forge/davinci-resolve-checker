@@ -13,10 +13,16 @@ STATUS_STYLES = {
     CheckStatus.FAIL: ("FAIL", "red bold"),
     CheckStatus.WARNING: ("WARN", "yellow"),
 }
+STATUS_ORDER = {
+    CheckStatus.FAIL: 0,
+    CheckStatus.WARNING: 1,
+    CheckStatus.PASS: 2,
+}
 
 
 def render_json(state: SystemState, results: list[CheckResult]) -> None:
     output = {
+        "ok": not any(result.status == CheckStatus.FAIL for result in results),
         "system": state.model_dump(mode="json"),
         "results": [r.model_dump(mode="json") for r in results],
     }
@@ -51,7 +57,7 @@ def render_text(state: SystemState, results: list[CheckResult]) -> None:
 
     console.print()
 
-    sorted_results = sorted(results, key=lambda r: list(CheckStatus).index(r.status))
+    sorted_results = sorted(results, key=lambda r: STATUS_ORDER[r.status])
 
     for result in sorted_results:
         label, style = STATUS_STYLES[result.status]

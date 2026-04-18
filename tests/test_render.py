@@ -15,6 +15,7 @@ class TestRenderJson:
         render_json(nvidia_desktop, results)
         captured = capsys.readouterr()
         data = json.loads(captured.out)
+        assert data["ok"] is True
         assert "system" in data
         assert "results" in data
         assert data["results"][0]["status"] == "pass"
@@ -24,6 +25,12 @@ class TestRenderJson:
         captured = capsys.readouterr()
         data = json.loads(captured.out)
         assert data["system"]["distro_id"] == "arch"
+
+    def test_failed_json_output_sets_ok_false(self, capsys, nvidia_desktop):
+        render_json(nvidia_desktop, [CheckResult(status=CheckStatus.FAIL, message="Bad")])
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        assert data["ok"] is False
 
 
 class TestRenderText:
@@ -37,6 +44,7 @@ class TestRenderText:
         assert "All good" in captured.out
         assert "Bad thing" in captured.out
         assert "Fix it" in captured.out
+        assert captured.out.index("Bad thing") < captured.out.index("All good")
 
     def test_shows_gpu_info(self, capsys, nvidia_desktop):
         render_text(nvidia_desktop, [])

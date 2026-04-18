@@ -55,7 +55,6 @@ class ChassisType(str, Enum):
         return self in {
             ChassisType.LAPTOP,
             ChassisType.NOTEBOOK,
-            ChassisType.SPACE_SAVING,
             ChassisType.CONVERTIBLE,
             ChassisType.PORTABLE,
             ChassisType.TABLET,
@@ -70,6 +69,7 @@ class ChassisType(str, Enum):
             ChassisType.DESKTOP,
             ChassisType.ALL_IN_ONE,
             ChassisType.MINI_PC,
+            ChassisType.SPACE_SAVING,
             ChassisType.TOWER,
             ChassisType.OTHER,
         }
@@ -115,6 +115,16 @@ class OpenCLPlatform(BaseModel):
     extensions: str
     devices: list[OpenCLDevice]
 
+    NVIDIA_ICD_SUFFIXES: ClassVar[set[str]] = {"NV", "NVIDIA"}
+
+    @property
+    def has_devices(self) -> bool:
+        return len(self.devices) > 0
+
+    @property
+    def is_clover(self) -> bool:
+        return self.name == "Clover"
+
     @property
     def is_orca(self) -> bool:
         return self.icd_suffix == "AMD" and "cl_amd_offline_devices" in self.extensions
@@ -122,6 +132,14 @@ class OpenCLPlatform(BaseModel):
     @property
     def is_roc(self) -> bool:
         return self.icd_suffix == "AMD" and not self.is_orca
+
+    @property
+    def is_amd(self) -> bool:
+        return self.icd_suffix == "AMD"
+
+    @property
+    def is_nvidia(self) -> bool:
+        return self.icd_suffix in self.NVIDIA_ICD_SUFFIXES or self.name.startswith("NVIDIA")
 
 
 class SystemState(BaseModel):

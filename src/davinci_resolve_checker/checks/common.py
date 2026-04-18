@@ -3,6 +3,7 @@ from __future__ import annotations
 from davinci_resolve_checker.models import CheckResult, CheckStatus, GPUVendor, SystemState
 
 SUPPORTED_DISTROS = {"arch", "manjaro", "endeavouros", "garuda", "cachyos"}
+SOFTWARE_RENDERERS = ("llvmpipe", "softpipe")
 
 
 def check_distro(state: SystemState) -> list[CheckResult]:
@@ -105,9 +106,38 @@ def check_gl_vendor(state: SystemState) -> list[CheckResult]:
     return []
 
 
+def check_gl_renderer(state: SystemState) -> list[CheckResult]:
+    if any(renderer in state.gl_renderer.lower() for renderer in SOFTWARE_RENDERERS):
+        return [
+            CheckResult(
+                status=CheckStatus.FAIL,
+                message=f"OpenGL renderer is using software rendering ({state.gl_renderer}).",
+                suggestion=(
+                    "Ensure your discrete GPU drivers are installed "
+                    "and the GPU is the active renderer."
+                ),
+            )
+        ]
+    return []
+
+
+def usable_opencl_platforms(state: SystemState) -> list:
+    return [p for p in state.opencl_platforms if not p.is_clover and p.has_devices]
+
+
+def has_vendor_opencl_platform(state: SystemState, vendor: GPUVendor) -> bool:
+    platforms = usable_opencl_platforms(state)
+
+    if vendor == GPUVendor.AMD:
+        return any(platform.is_amd for platform in platforms)
+    if vendor == GPUVendor.NVIDIA:
+        return any(platform.is_nvidia for platform in platforms)
+
+    return bool(platforms)
+
+
 def check_opencl_platforms(state: SystemState) -> list[CheckResult]:
-    usable = [p for p in state.opencl_platforms if p.name != "Clover" and len(p.devices) > 0]
-    if not usable:
+    if not usable_opencl_platforms(state):
         return [
             CheckResult(
                 status=CheckStatus.FAIL,

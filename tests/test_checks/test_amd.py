@@ -7,6 +7,7 @@ from tests.conftest import (
     AMD_NAVI_GPU,
     AMD_RADEON_DRIVER_GPU,
     INTEL_GPU,
+    POCL_PLATFORM,
     ROC_PLATFORM,
     _make_gpu,
     _make_state,
@@ -89,6 +90,7 @@ class TestCheckAmdPro:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=["opencl-amd"],
+            opencl_platforms=[ROC_PLATFORM],
             gl_vendor="Advanced Micro Devices, Inc.",
             gl_renderer="AMD Radeon RX 6600",
             package_versions={"opencl-amd": "6.1.0", "amdgpu-pro-libgl": "6.1.0"},
@@ -100,6 +102,7 @@ class TestCheckAmdPro:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=["opencl-amd"],
+            opencl_platforms=[ROC_PLATFORM],
             gl_vendor="AMD",
             gl_renderer="AMD Radeon RX 6600",
         )
@@ -110,6 +113,7 @@ class TestCheckAmdPro:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=[],
+            opencl_platforms=[ROC_PLATFORM],
             gl_vendor="Advanced Micro Devices, Inc.",
             gl_renderer="AMD Radeon RX 6600",
         )
@@ -120,6 +124,7 @@ class TestCheckAmdPro:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=["opencl-amd"],
+            opencl_platforms=[ROC_PLATFORM],
             gl_vendor="Advanced Micro Devices, Inc.",
             gl_renderer="AMD Radeon RX 6600",
             package_versions={"opencl-amd": "6.1.0", "amdgpu-pro-libgl": "6.0.0"},
@@ -133,11 +138,23 @@ class TestCheckAmdPro:
         state = _make_state(
             gpus=[AMD_ELLESMERE_GPU],
             opencl_drivers=["opencl-legacy-amdgpu-pro"],
+            opencl_platforms=[ROC_PLATFORM],
             gl_vendor="Advanced Micro Devices, Inc.",
             gl_renderer="AMD Radeon RX 580",
         )
         results = check_amd(state, pro_stack=True)
         assert all(r.status != CheckStatus.FAIL or "OpenCL" not in r.message for r in results)
+
+    def test_pro_stack_pre_vega_opencl_amd_alone_fails(self):
+        state = _make_state(
+            gpus=[AMD_ELLESMERE_GPU],
+            opencl_drivers=["opencl-amd"],
+            opencl_platforms=[ROC_PLATFORM],
+            gl_vendor="Advanced Micro Devices, Inc.",
+            gl_renderer="AMD Radeon RX 580",
+        )
+        results = check_amd(state, pro_stack=True)
+        assert any(r.status == CheckStatus.FAIL and "OpenCL" in r.message for r in results)
 
 
 class TestCheckAmdOpen:
@@ -194,6 +211,7 @@ class TestCheckAmdOpen:
         state = _make_state(
             gpus=[gpu],
             opencl_drivers=["rocm-opencl-runtime"],
+            opencl_platforms=[ROC_PLATFORM],
             gl_vendor="AMD",
             gl_renderer="AMD Unknown GPU",
         )
@@ -201,6 +219,24 @@ class TestCheckAmdOpen:
         assert any(
             r.status == CheckStatus.WARNING and "undetectable" in r.message.lower() for r in results
         )
+        assert all(
+            r.status != CheckStatus.FAIL or "ROC_ENABLE_PRE_VEGA" not in r.message for r in results
+        )
+
+    def test_missing_amd_opencl_platform_fails(self):
+        state = _make_state(
+            gpus=[AMD_NAVI_GPU],
+            opencl_drivers=["rocm-opencl-runtime"],
+            opencl_platforms=[POCL_PLATFORM],
+            gl_vendor="AMD",
+            gl_renderer="AMD Radeon RX 6600",
+        )
+        results = check_amd(state)
+        assert any(r.status == CheckStatus.FAIL and "OpenCL platform" in r.message for r in results)
+
+    def test_emit_pass_false_suppresses_success_message(self, amd_desktop):
+        results = check_amd(amd_desktop, emit_pass=False)
+        assert all(r.status != CheckStatus.PASS for r in results)
 
     def test_no_amd_gpu_returns_empty(self):
         state = _make_state(gpus=[INTEL_GPU])

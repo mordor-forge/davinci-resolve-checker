@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from davinci_resolve_checker.checks.common import has_vendor_opencl_platform
 from davinci_resolve_checker.models import (
     CheckResult,
     CheckStatus,
@@ -11,7 +12,11 @@ from davinci_resolve_checker.models import (
 PRO_GL_VENDOR = "Advanced Micro Devices, Inc."
 
 
-def check_amd(state: SystemState, pro_stack: bool = False) -> list[CheckResult]:
+def check_amd(
+    state: SystemState,
+    pro_stack: bool = False,
+    emit_pass: bool = True,
+) -> list[CheckResult]:
     amd_gpus = [g for g in state.gpus if g.vendor == GPUVendor.AMD]
     if not amd_gpus:
         return []
@@ -32,7 +37,9 @@ def check_amd(state: SystemState, pro_stack: bool = False) -> list[CheckResult]:
     else:
         results.extend(_check_amd_open(state, gpu))
 
-    if not any(r.status == CheckStatus.FAIL for r in results):
+    results.extend(_check_amd_opencl_platform(state))
+
+    if emit_pass and not any(r.status == CheckStatus.FAIL for r in results):
         results.append(
             CheckResult(
                 status=CheckStatus.PASS,
@@ -90,7 +97,7 @@ def _check_amd_mixed_intel(state: SystemState) -> list[CheckResult]:
             )
         ]
 
-    if state.gl_vendor == "Intel":
+    if "intel" in state.gl_vendor.lower():
         return [
             CheckResult(
                 status=CheckStatus.FAIL,
@@ -126,7 +133,7 @@ def _check_amd_pro(state: SystemState, gpu: GPUDevice) -> list[CheckResult]:
     is_pre_vega = gpu.is_pre_vega
     valid_opencl = ["opencl-amd"]
     if is_pre_vega is True:
-        valid_opencl.append("opencl-legacy-amdgpu-pro")
+        valid_opencl = ["opencl-legacy-amdgpu-pro"]
 
     if not any(drv in state.opencl_drivers for drv in valid_opencl):
         results.append(
@@ -162,10 +169,13 @@ def _check_amd_open(state: SystemState, gpu: GPUDevice) -> list[CheckResult]:
         results.append(
             CheckResult(
                 status=CheckStatus.WARNING,
-                message="AMD GPU codename undetectable. Assuming pre-Vega for safety.",
+                message=(
+                    "AMD GPU codename undetectable. "
+                    "Pre-Vega requirements could not be verified."
+                ),
+                suggestion="If this is a pre-Vega card, you may still need ROC_ENABLE_PRE_VEGA=1.",
             )
         )
-        is_pre_vega = True
 
     if is_pre_vega and not state.roc_enable_pre_vega:
         results.append(
@@ -194,3 +204,16 @@ def _check_amd_open(state: SystemState, gpu: GPUDevice) -> list[CheckResult]:
         )
 
     return results
+
+
+def _check_amd_opencl_platform(state: SystemState) -> list[CheckResult]:
+    if has_vendor_opencl_platform(state, GPUVendor.AMD):
+        return []
+
+    return [
+        CheckResult(
+            status=CheckStatus.FAIL,
+            message="No AMD OpenCL platform detected.",
+            suggestion="Ensure clinfo lists an AMD OpenCL platform for your GPU.",
+        )
+    ]

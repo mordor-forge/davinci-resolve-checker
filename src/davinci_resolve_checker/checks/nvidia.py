@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from davinci_resolve_checker.checks.common import has_vendor_opencl_platform
 from davinci_resolve_checker.models import CheckResult, CheckStatus, GPUVendor, SystemState
 
 
-def check_nvidia(state: SystemState) -> list[CheckResult]:
+def check_nvidia(state: SystemState, emit_pass: bool = True) -> list[CheckResult]:
     nvidia_gpus = [g for g in state.gpus if g.vendor == GPUVendor.NVIDIA]
     if not nvidia_gpus:
         return []
@@ -17,6 +18,18 @@ def check_nvidia(state: SystemState) -> list[CheckResult]:
                 status=CheckStatus.FAIL,
                 message="opencl-nvidia package is not installed.",
                 suggestion="Install it: sudo pacman -S opencl-nvidia",
+            )
+        )
+
+    if not has_vendor_opencl_platform(state, GPUVendor.NVIDIA):
+        results.append(
+            CheckResult(
+                status=CheckStatus.FAIL,
+                message="No NVIDIA OpenCL platform detected.",
+                suggestion=(
+                    "Ensure opencl-nvidia is installed "
+                    "and clinfo lists the NVIDIA CUDA platform."
+                ),
             )
         )
 
@@ -38,7 +51,7 @@ def check_nvidia(state: SystemState) -> list[CheckResult]:
             )
         )
 
-    if not results:
+    if emit_pass and not results:
         results.append(
             CheckResult(
                 status=CheckStatus.PASS,

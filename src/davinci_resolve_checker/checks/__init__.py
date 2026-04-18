@@ -5,6 +5,7 @@ from collections.abc import Callable
 from davinci_resolve_checker.checks.amd import check_amd
 from davinci_resolve_checker.checks.common import (
     check_distro,
+    check_gl_renderer,
     check_gl_vendor,
     check_gpu_conflict,
     check_gpu_presence,
@@ -22,33 +23,52 @@ def run_all_checks(
 ) -> list[CheckResult]:
     results: list[CheckResult] = []
 
-    for check_fn in _check_sequence(state, pro_stack):
-        results.extend(check_fn())
-        if fail_fast and any(r.status == CheckStatus.FAIL for r in results):
-            break
+    for check_fn in _common_check_sequence(state):
+        if _append_check_results(results, check_fn(), fail_fast):
+            return results
+
+    emit_pass = not any(result.status == CheckStatus.FAIL for result in results)
+
+    has_amd = any(g.vendor == GPUVendor.AMD for g in state.gpus)
+    has_nvidia = any(g.vendor == GPUVendor.NVIDIA for g in state.gpus)
+
+    if has_amd and _append_check_results(
+        results,
+        check_amd(state, pro_stack=pro_stack, emit_pass=emit_pass),
+        fail_fast,
+    ):
+        return results
+
+    if has_nvidia and _append_check_results(
+        results,
+        check_nvidia(state, emit_pass=emit_pass),
+        fail_fast,
+    ):
+        return results
 
     return results
 
 
-def _check_sequence(
-    state: SystemState,
-    pro_stack: bool,
-) -> list[Callable[[], list[CheckResult]]]:
-    checks: list[Callable[[], list[CheckResult]]] = [
+def _append_check_results(
+    results: list[CheckResult],
+    check_results: list[CheckResult],
+    fail_fast: bool,
+) -> bool:
+    for result in check_results:
+        results.append(result)
+        if fail_fast and result.status == CheckStatus.FAIL:
+            return True
+
+    return False
+
+
+def _common_check_sequence(state: SystemState) -> list[Callable[[], list[CheckResult]]]:
+    return [
         lambda: check_distro(state),
         lambda: check_opencl_mesa(state),
         lambda: check_gpu_presence(state),
         lambda: check_gpu_conflict(state),
         lambda: check_gl_vendor(state),
+        lambda: check_gl_renderer(state),
         lambda: check_opencl_platforms(state),
     ]
-
-    has_amd = any(g.vendor == GPUVendor.AMD for g in state.gpus)
-    has_nvidia = any(g.vendor == GPUVendor.NVIDIA for g in state.gpus)
-
-    if has_amd:
-        checks.append(lambda: check_amd(state, pro_stack=pro_stack))
-    if has_nvidia:
-        checks.append(lambda: check_nvidia(state))
-
-    return checks

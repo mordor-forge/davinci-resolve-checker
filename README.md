@@ -7,9 +7,23 @@ Supports Arch Linux, CachyOS, EndeavourOS, Manjaro, and Garuda.
 ## Installation
 
 ```bash
+# Install uv first on Arch-based systems
+sudo pacman -S uv
+
+# Then install the checker from PyPI
 uv tool install davinci-resolve-checker
-# or
-pipx install davinci-resolve-checker
+
+# Or run it without installing
+uvx davinci-resolve-checker
+```
+
+If you do not want to install `uv` from `pacman`, see the official
+[uv installation docs](https://docs.astral.sh/uv/getting-started/installation/).
+
+For the most complete diagnostics, make sure these system utilities are available:
+
+```bash
+sudo pacman -S expac clinfo mesa-utils pciutils
 ```
 
 ## Usage
@@ -24,7 +38,7 @@ davinci-resolve-checker --pro
 # Machine-readable JSON output
 davinci-resolve-checker --json
 
-# Stop after first failure
+# Stop after the first failing result
 davinci-resolve-checker --fail-fast
 ```
 
@@ -33,7 +47,7 @@ davinci-resolve-checker --fail-fast
 | Flag | Description |
 |------|-------------|
 | `--pro` | Check for AMD proprietary stack compatibility |
-| `--fail-fast` | Stop after first failure |
+| `--fail-fast` | Stop after the first failing result |
 | `--json` | Machine-readable JSON output |
 
 ### Shell Completions

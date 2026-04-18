@@ -4,6 +4,7 @@ import pytest
 
 from davinci_resolve_checker.checks.common import (
     check_distro,
+    check_gl_renderer,
     check_gl_vendor,
     check_gpu_conflict,
     check_gpu_presence,
@@ -17,6 +18,7 @@ from tests.conftest import (
     INTEL_GPU,
     NVIDIA_CL_PLATFORM,
     NVIDIA_GPU,
+    POCL_PLATFORM,
     ROC_PLATFORM,
     _make_state,
 )
@@ -122,6 +124,18 @@ class TestCheckGLVendor:
         assert any(r.status == CheckStatus.FAIL for r in results)
 
 
+class TestCheckGLRenderer:
+    def test_hardware_renderer_present(self):
+        state = _make_state(gl_renderer="NVIDIA GeForce RTX 2070 SUPER")
+        results = check_gl_renderer(state)
+        assert len(results) == 0
+
+    def test_software_renderer_fails(self):
+        state = _make_state(gl_renderer="llvmpipe (LLVM 18.1.8, 256 bits)")
+        results = check_gl_renderer(state)
+        assert any(r.status == CheckStatus.FAIL for r in results)
+
+
 class TestCheckOpenCLPlatforms:
     def test_valid_platform_with_devices(self):
         state = _make_state(opencl_platforms=[ROC_PLATFORM])
@@ -143,3 +157,8 @@ class TestCheckOpenCLPlatforms:
         state = _make_state(opencl_platforms=[empty_platform])
         results = check_opencl_platforms(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
+
+    def test_pocl_platform_is_generic_usable_platform(self):
+        state = _make_state(opencl_platforms=[POCL_PLATFORM])
+        results = check_opencl_platforms(state)
+        assert all(r.status != CheckStatus.FAIL for r in results)

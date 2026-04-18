@@ -226,16 +226,42 @@ class TestProbeGPUs:
 class TestProbeGLInfo:
     def test_probe_gl_info(self):
         with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
-            mock_run.side_effect = [
-                CompletedProcess(args="", returncode=0, stdout=" NVIDIA Corporation\n"),
-                CompletedProcess(args="", returncode=0, stdout="NVIDIA GeForce RTX 2070 SUPER\n"),
-            ]
+            mock_run.return_value = CompletedProcess(
+                args=["glxinfo", "-B"],
+                returncode=0,
+                stdout=(
+                    "Extended renderer info (GLX_MESA_query_renderer):\n"
+                    "OpenGL vendor string: NVIDIA Corporation\n"
+                    "OpenGL renderer string: NVIDIA GeForce RTX 2070 SUPER\n"
+                ),
+            )
 
             from davinci_resolve_checker.probes.gpu import probe_gl_info
 
             vendor, renderer = probe_gl_info()
             assert vendor == "NVIDIA Corporation"
             assert renderer == "NVIDIA GeForce RTX 2070 SUPER"
+
+    def test_probe_gl_info_falls_back_to_eglinfo(self):
+        with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
+            mock_run.side_effect = [
+                CompletedProcess(args=["glxinfo", "-B"], returncode=1, stdout=""),
+                CompletedProcess(
+                    args=["eglinfo", "-B"],
+                    returncode=3,
+                    stdout=(
+                        "EGL vendor string: NVIDIA\n"
+                        "OpenGL core profile vendor: NVIDIA Corporation\n"
+                        "OpenGL core profile renderer: NVIDIA GeForce RTX 2070 SUPER/PCIe/SSE2\n"
+                    ),
+                ),
+            ]
+
+            from davinci_resolve_checker.probes.gpu import probe_gl_info
+
+            vendor, renderer = probe_gl_info()
+            assert vendor == "NVIDIA Corporation"
+            assert renderer == "NVIDIA GeForce RTX 2070 SUPER/PCIe/SSE2"
 
     def test_probe_gl_info_exception(self):
         with patch(
@@ -249,7 +275,10 @@ class TestProbeGLInfo:
 
     def test_probe_gl_info_missing_glxinfo(self):
         with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
-            mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
+            mock_run.side_effect = [
+                CompletedProcess(args=["glxinfo", "-B"], returncode=1, stdout=""),
+                CompletedProcess(args=["eglinfo", "-B"], returncode=1, stdout=""),
+            ]
 
             from davinci_resolve_checker.probes.gpu import probe_gl_info
 

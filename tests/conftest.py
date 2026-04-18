@@ -98,7 +98,7 @@ ROC_PLATFORM = OpenCLPlatform(
 
 NVIDIA_CL_PLATFORM = OpenCLPlatform(
     name="NVIDIA CUDA",
-    icd_suffix="NVIDIA",
+    icd_suffix="NV",
     extensions="cl_khr_icd",
     devices=[OpenCLDevice(name="NVIDIA GeForce RTX 2070 SUPER")],
 )
@@ -108,6 +108,13 @@ CLOVER_PLATFORM = OpenCLPlatform(
     icd_suffix="MESA",
     extensions="cl_khr_icd",
     devices=[OpenCLDevice(name="AMD Radeon RX 6600")],
+)
+
+POCL_PLATFORM = OpenCLPlatform(
+    name="Portable Computing Language",
+    icd_suffix="POCL",
+    extensions="cl_khr_icd",
+    devices=[OpenCLDevice(name="pthread-skylake-avx512-Intel(R) Core(TM)")],
 )
 
 

@@ -6,6 +6,23 @@ from pylspci.parsers import VerboseParser
 
 from davinci_resolve_checker.models import GPUDevice, GPUVendor
 
+GLXINFO_VENDOR_PREFIX = "OpenGL vendor string:"
+GLXINFO_RENDERER_PREFIX = "OpenGL renderer string:"
+EGLINFO_VENDOR_RENDERER_PREFIXES = (
+    (
+        "OpenGL core profile vendor:",
+        "OpenGL core profile renderer:",
+    ),
+    (
+        "OpenGL compatibility profile vendor:",
+        "OpenGL compatibility profile renderer:",
+    ),
+    (
+        "OpenGL ES profile vendor:",
+        "OpenGL ES profile renderer:",
+    ),
+)
+
 
 def probe_gpus() -> list[GPUDevice]:
     lspci_devices = VerboseParser().run()
@@ -36,25 +53,41 @@ def probe_gpus() -> list[GPUDevice]:
     return gpus
 
 
-def probe_gl_info() -> tuple[str, str]:
+def _run_graphics_probe(command: list[str]) -> str:
     try:
-        vendor_result = subprocess.run(
-            'glxinfo | grep "OpenGL vendor string" | cut -f2 -d":"',
-            shell=True,
+        result = subprocess.run(  # noqa: S603
+            command,
             capture_output=True,
             text=True,
             timeout=10,
         )
-        renderer_result = subprocess.run(
-            "glxinfo | grep -i 'OpenGL renderer' | cut -f2 -d ':' | xargs",
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        vendor = vendor_result.stdout.strip() if vendor_result.returncode == 0 else ""
-        renderer = renderer_result.stdout.strip() if renderer_result.returncode == 0 else ""
-    except Exception:
-        vendor, renderer = "", ""
+    except (OSError, subprocess.SubprocessError):
+        return ""
 
-    return vendor, renderer
+    return result.stdout
+
+
+def _extract_prefixed_value(output: str, prefix: str) -> str:
+    for line in output.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(prefix):
+            return stripped.removeprefix(prefix).strip()
+
+    return ""
+
+
+def probe_gl_info() -> tuple[str, str]:
+    glxinfo_output = _run_graphics_probe(["glxinfo", "-B"])
+    vendor = _extract_prefixed_value(glxinfo_output, GLXINFO_VENDOR_PREFIX)
+    renderer = _extract_prefixed_value(glxinfo_output, GLXINFO_RENDERER_PREFIX)
+    if vendor and renderer:
+        return vendor, renderer
+
+    eglinfo_output = _run_graphics_probe(["eglinfo", "-B"])
+    for vendor_prefix, renderer_prefix in EGLINFO_VENDOR_RENDERER_PREFIXES:
+        vendor = _extract_prefixed_value(eglinfo_output, vendor_prefix)
+        renderer = _extract_prefixed_value(eglinfo_output, renderer_prefix)
+        if vendor and renderer:
+            return vendor, renderer
+
+    return "", ""

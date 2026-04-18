@@ -26,7 +26,6 @@ class TestChassisType:
         [
             ChassisType.LAPTOP,
             ChassisType.NOTEBOOK,
-            ChassisType.SPACE_SAVING,
             ChassisType.CONVERTIBLE,
             ChassisType.PORTABLE,
             ChassisType.TABLET,
@@ -45,6 +44,7 @@ class TestChassisType:
             ChassisType.DESKTOP,
             ChassisType.ALL_IN_ONE,
             ChassisType.MINI_PC,
+            ChassisType.SPACE_SAVING,
             ChassisType.TOWER,
             ChassisType.OTHER,
         ],
@@ -155,12 +155,24 @@ class TestOpenCLPlatform:
     def test_non_amd_platform(self):
         platform = OpenCLPlatform(
             name="NVIDIA CUDA",
-            icd_suffix="NVIDIA",
+            icd_suffix="NV",
             extensions="cl_khr_icd",
             devices=[],
         )
         assert platform.is_orca is False
         assert platform.is_roc is False
+        assert platform.is_nvidia is True
+        assert platform.is_amd is False
+        assert platform.has_devices is False
+
+    def test_clover_platform(self):
+        platform = OpenCLPlatform(
+            name="Clover",
+            icd_suffix="MESA",
+            extensions="cl_khr_icd",
+            devices=[],
+        )
+        assert platform.is_clover is True
 
 
 class TestSystemState:
