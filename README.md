@@ -36,6 +36,15 @@ davinci-resolve-checker --fail-fast
 | `--fail-fast` | Stop after first failure |
 | `--json` | Machine-readable JSON output |
 
+### Shell Completions
+
+```bash
+# Install completions for your current shell (bash, zsh, or fish)
+davinci-resolve-checker --install-completion
+```
+
+This auto-detects your shell and adds the completion script to your RC file. Restart your shell or source the RC file to activate.
+
 ### Exit Codes
 
 - `0` — all checks pass

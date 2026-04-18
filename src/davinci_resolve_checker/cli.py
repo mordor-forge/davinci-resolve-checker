@@ -13,6 +13,7 @@ app = cyclopts.App(
     name="davinci-resolve-checker",
     help="Check system configuration for DaVinci Resolve compatibility on Arch-based Linux.",
 )
+app.register_install_completion_command()
 
 
 @app.default
