@@ -74,8 +74,11 @@ uv run ruff format --check src/ tests/
 
 ## Credits
 
-Based on [Ashark/davinci-resolve-checker](https://github.com/Ashark/davinci-resolve-checker). Rewritten with modern Python tooling, pydantic data models, and comprehensive test coverage.
+This project is a ground-up rewrite of [Ashark/davinci-resolve-checker](https://github.com/Ashark/davinci-resolve-checker). The check logic, GPU codename lists, and OpenCL detection heuristics are derived from the original work. No code was copied verbatim.
 
 ## License
 
-GPL-3.0-or-later
+GPL-3.0 — inheriting the copyleft license from the original project.
+
+Copyright (c) 2024 Ashark (original project)
+Copyright (c) 2026 mordor-forge (rewrite)
