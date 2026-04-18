@@ -78,7 +78,4 @@ This project is a ground-up rewrite of [Ashark/davinci-resolve-checker](https://
 
 ## License
 
-GPL-3.0 — inheriting the copyleft license from the original project.
-
-Copyright (c) 2024 Ashark (original project)
-Copyright (c) 2026 mordor-forge (rewrite)
+[GPL-3.0](LICENSE)
