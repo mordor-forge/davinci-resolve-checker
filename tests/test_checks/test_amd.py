@@ -15,11 +15,11 @@ from tests.conftest import (
 
 
 class TestCheckAmdDriver:
-    def test_amdgpu_driver(self, amd_desktop):
+    def test_amdgpu_driver(self, amd_desktop) -> None:
         results = check_amd(amd_desktop)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
-    def test_radeon_driver_with_amdgpu_available(self):
+    def test_radeon_driver_with_amdgpu_available(self) -> None:
         state = _make_state(
             gpus=[AMD_RADEON_DRIVER_GPU],
             gl_vendor="AMD",
@@ -28,7 +28,7 @@ class TestCheckAmdDriver:
         results = check_amd(state)
         assert any(r.status == CheckStatus.FAIL and "radeon" in r.message.lower() for r in results)
 
-    def test_no_amdgpu_driver(self):
+    def test_no_amdgpu_driver(self) -> None:
         gpu = _make_gpu(
             name="Some Old AMD GPU",
             vendor=GPUVendor.AMD,
@@ -39,7 +39,7 @@ class TestCheckAmdDriver:
         results = check_amd(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_no_driver_at_all(self):
+    def test_no_driver_at_all(self) -> None:
         gpu = _make_gpu(
             name="Navi 23",
             vendor=GPUVendor.AMD,
@@ -52,7 +52,7 @@ class TestCheckAmdDriver:
 
 
 class TestCheckAmdMixedIntel:
-    def test_intel_amd_mobile_rejected(self):
+    def test_intel_amd_mobile_rejected(self) -> None:
         state = _make_state(
             chassis=ChassisType.LAPTOP,
             gpus=[INTEL_GPU, AMD_NAVI_GPU],
@@ -62,7 +62,7 @@ class TestCheckAmdMixedIntel:
         results = check_amd(state)
         assert any(r.status == CheckStatus.FAIL and "Intel" in r.message for r in results)
 
-    def test_intel_amd_desktop_intel_primary(self):
+    def test_intel_amd_desktop_intel_primary(self) -> None:
         state = _make_state(
             chassis=ChassisType.DESKTOP,
             gpus=[INTEL_GPU, AMD_NAVI_GPU],
@@ -72,7 +72,7 @@ class TestCheckAmdMixedIntel:
         results = check_amd(state)
         assert any(r.status == CheckStatus.FAIL and "primary" in r.message.lower() for r in results)
 
-    def test_intel_amd_desktop_amd_primary_ok(self):
+    def test_intel_amd_desktop_amd_primary_ok(self) -> None:
         state = _make_state(
             chassis=ChassisType.DESKTOP,
             gpus=[INTEL_GPU, AMD_NAVI_GPU],
@@ -86,7 +86,7 @@ class TestCheckAmdMixedIntel:
 
 
 class TestCheckAmdPro:
-    def test_pro_stack_all_good(self):
+    def test_pro_stack_all_good(self) -> None:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=["opencl-amd"],
@@ -98,7 +98,7 @@ class TestCheckAmdPro:
         results = check_amd(state, pro_stack=True)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
-    def test_pro_stack_missing_opengl(self):
+    def test_pro_stack_missing_opengl(self) -> None:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=["opencl-amd"],
@@ -109,7 +109,7 @@ class TestCheckAmdPro:
         results = check_amd(state, pro_stack=True)
         assert any(r.status == CheckStatus.FAIL and "OpenGL" in r.message for r in results)
 
-    def test_pro_stack_missing_opencl(self):
+    def test_pro_stack_missing_opencl(self) -> None:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=[],
@@ -120,7 +120,7 @@ class TestCheckAmdPro:
         results = check_amd(state, pro_stack=True)
         assert any(r.status == CheckStatus.FAIL and "OpenCL" in r.message for r in results)
 
-    def test_pro_stack_version_mismatch(self):
+    def test_pro_stack_version_mismatch(self) -> None:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=["opencl-amd"],
@@ -134,7 +134,7 @@ class TestCheckAmdPro:
             r.status == CheckStatus.WARNING and "mismatch" in r.message.lower() for r in results
         )
 
-    def test_pro_stack_pre_vega_needs_legacy_opencl(self):
+    def test_pro_stack_pre_vega_needs_legacy_opencl(self) -> None:
         state = _make_state(
             gpus=[AMD_ELLESMERE_GPU],
             opencl_drivers=["opencl-legacy-amdgpu-pro"],
@@ -145,7 +145,7 @@ class TestCheckAmdPro:
         results = check_amd(state, pro_stack=True)
         assert all(r.status != CheckStatus.FAIL or "OpenCL" not in r.message for r in results)
 
-    def test_pro_stack_pre_vega_opencl_amd_alone_fails(self):
+    def test_pro_stack_pre_vega_opencl_amd_alone_fails(self) -> None:
         state = _make_state(
             gpus=[AMD_ELLESMERE_GPU],
             opencl_drivers=["opencl-amd"],
@@ -158,11 +158,11 @@ class TestCheckAmdPro:
 
 
 class TestCheckAmdOpen:
-    def test_open_stack_rocm_good(self, amd_desktop):
+    def test_open_stack_rocm_good(self, amd_desktop) -> None:
         results = check_amd(amd_desktop)
         assert any(r.status == CheckStatus.PASS for r in results)
 
-    def test_open_stack_missing_rocm(self):
+    def test_open_stack_missing_rocm(self) -> None:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=[],
@@ -172,7 +172,7 @@ class TestCheckAmdOpen:
         results = check_amd(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_open_stack_opencl_amd_warns(self):
+    def test_open_stack_opencl_amd_warns(self) -> None:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=["opencl-amd"],
@@ -182,7 +182,7 @@ class TestCheckAmdOpen:
         results = check_amd(state)
         assert any(r.status == CheckStatus.FAIL and "rocm" in r.message.lower() for r in results)
 
-    def test_pre_vega_needs_env_var(self):
+    def test_pre_vega_needs_env_var(self) -> None:
         state = _make_state(
             gpus=[AMD_ELLESMERE_GPU],
             opencl_drivers=["rocm-opencl-runtime"],
@@ -195,13 +195,13 @@ class TestCheckAmdOpen:
             r.status == CheckStatus.FAIL and "ROC_ENABLE_PRE_VEGA" in r.message for r in results
         )
 
-    def test_pre_vega_with_env_var(self, amd_pre_vega):
+    def test_pre_vega_with_env_var(self, amd_pre_vega) -> None:
         results = check_amd(amd_pre_vega)
         assert all(
             r.status != CheckStatus.FAIL or "ROC_ENABLE_PRE_VEGA" not in r.message for r in results
         )
 
-    def test_open_stack_unknown_codename_warns(self):
+    def test_open_stack_unknown_codename_warns(self) -> None:
         gpu = _make_gpu(
             name="Some Unknown AMD GPU",
             vendor=GPUVendor.AMD,
@@ -223,7 +223,7 @@ class TestCheckAmdOpen:
             r.status != CheckStatus.FAIL or "ROC_ENABLE_PRE_VEGA" not in r.message for r in results
         )
 
-    def test_missing_amd_opencl_platform_fails(self):
+    def test_missing_amd_opencl_platform_fails(self) -> None:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=["rocm-opencl-runtime"],
@@ -234,11 +234,11 @@ class TestCheckAmdOpen:
         results = check_amd(state)
         assert any(r.status == CheckStatus.FAIL and "OpenCL platform" in r.message for r in results)
 
-    def test_emit_pass_false_suppresses_success_message(self, amd_desktop):
+    def test_emit_pass_false_suppresses_success_message(self, amd_desktop) -> None:
         results = check_amd(amd_desktop, emit_pass=False)
         assert all(r.status != CheckStatus.PASS for r in results)
 
-    def test_no_amd_gpu_returns_empty(self):
+    def test_no_amd_gpu_returns_empty(self) -> None:
         state = _make_state(gpus=[INTEL_GPU])
         results = check_amd(state)
         assert results == []

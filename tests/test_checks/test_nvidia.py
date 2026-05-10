@@ -6,12 +6,12 @@ from tests.conftest import INTEL_GPU, NVIDIA_GPU, POCL_PLATFORM, _make_state
 
 
 class TestCheckNvidia:
-    def test_all_good(self, nvidia_desktop):
+    def test_all_good(self, nvidia_desktop) -> None:
         results = check_nvidia(nvidia_desktop)
         assert any(r.status == CheckStatus.PASS for r in results)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
-    def test_missing_opencl_nvidia(self):
+    def test_missing_opencl_nvidia(self) -> None:
         state = _make_state(
             gpus=[NVIDIA_GPU],
             opencl_nvidia_installed=False,
@@ -21,7 +21,7 @@ class TestCheckNvidia:
         results = check_nvidia(state)
         assert any(r.status == CheckStatus.FAIL and "opencl-nvidia" in r.message for r in results)
 
-    def test_wrong_kernel_driver(self):
+    def test_wrong_kernel_driver(self) -> None:
         bad_gpu = NVIDIA_GPU.model_copy(update={"driver": "nouveau"})
         state = _make_state(
             gpus=[bad_gpu],
@@ -32,7 +32,7 @@ class TestCheckNvidia:
         results = check_nvidia(state)
         assert any(r.status == CheckStatus.FAIL and "nvidia" in r.message.lower() for r in results)
 
-    def test_wrong_gl_vendor(self):
+    def test_wrong_gl_vendor(self) -> None:
         state = _make_state(
             gpus=[INTEL_GPU, NVIDIA_GPU],
             opencl_nvidia_installed=True,
@@ -46,7 +46,7 @@ class TestCheckNvidia:
             for r in results
         )
 
-    def test_missing_nvidia_opencl_platform(self):
+    def test_missing_nvidia_opencl_platform(self) -> None:
         state = _make_state(
             gpus=[NVIDIA_GPU],
             opencl_drivers=["opencl-nvidia"],
@@ -58,11 +58,11 @@ class TestCheckNvidia:
         results = check_nvidia(state)
         assert any(r.status == CheckStatus.FAIL and "OpenCL platform" in r.message for r in results)
 
-    def test_emit_pass_false_suppresses_success_message(self, nvidia_desktop):
+    def test_emit_pass_false_suppresses_success_message(self, nvidia_desktop) -> None:
         results = check_nvidia(nvidia_desktop, emit_pass=False)
         assert all(r.status != CheckStatus.PASS for r in results)
 
-    def test_no_nvidia_gpu_returns_empty(self):
+    def test_no_nvidia_gpu_returns_empty(self) -> None:
         state = _make_state(gpus=[INTEL_GPU])
         results = check_nvidia(state)
         assert results == []
