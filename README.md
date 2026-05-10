@@ -1,8 +1,23 @@
 # davinci-resolve-checker
 
-Check system configuration and hardware compatibility for running DaVinci Resolve on Arch-based Linux distributions.
+[![CI](https://github.com/mordor-forge/davinci-resolve-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/mordor-forge/davinci-resolve-checker/actions/workflows/ci.yml)
+
+Check whether an Arch-based Linux system is configured well enough to run DaVinci Resolve before you spend time debugging GPU, OpenCL, or renderer issues by hand.
 
 Supports Arch Linux, CachyOS, EndeavourOS, Manjaro, and Garuda.
+
+## Features
+
+- Detects supported GPU topologies and flags unsupported Intel-only or mixed-vendor setups
+- Checks OpenGL renderer selection, installed OpenCL drivers, and discovered OpenCL platforms
+- Applies AMD open-stack, AMD Pro, and NVIDIA-specific compatibility rules
+- Emits either a readable terminal report or machine-readable JSON for automation
+
+## Documentation
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) for the CLI, probe, check, and render flow
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, testing, commit style, and PR expectations
+- [`AGENTS.md`](AGENTS.md) for agent-specific working rules and verification commands
 
 ## Installation
 
@@ -61,8 +76,8 @@ This auto-detects your shell and adds the completion script to your RC file. Res
 
 ### Exit Codes
 
-- `0` — all checks pass
-- `1` — at least one check failed
+- `0` if all checks pass
+- `1` if at least one check fails
 
 ## Development
 
@@ -73,7 +88,7 @@ uv sync
 uv run pytest -v
 ```
 
-### Run the full test matrix
+### Full Test Matrix
 
 ```bash
 uvx --with tox-uv tox
@@ -82,9 +97,14 @@ uvx --with tox-uv tox
 ### Lint
 
 ```bash
-uv run ruff check src/ tests/
-uv run ruff format --check src/ tests/
+uv run ruff check src tests
+uv run ruff format --check src tests
 ```
+
+## Support
+
+Open bugs or feature requests in [GitHub Issues](https://github.com/mordor-forge/davinci-resolve-checker/issues).
+For security-sensitive reports, follow the private reporting guidance in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Credits
 

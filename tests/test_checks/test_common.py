@@ -27,12 +27,12 @@ from tests.conftest import (
 
 class TestCheckDistro:
     @pytest.mark.parametrize("distro_id", ["arch", "manjaro", "endeavouros", "garuda", "cachyos"])
-    def test_supported_distros(self, distro_id: str):
+    def test_supported_distros(self, distro_id: str) -> None:
         state = _make_state(distro_id=distro_id)
         results = check_distro(state)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
-    def test_unsupported_distro(self):
+    def test_unsupported_distro(self) -> None:
         state = _make_state(distro_id="ubuntu", distro_name="Ubuntu 24.04")
         results = check_distro(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
@@ -40,56 +40,56 @@ class TestCheckDistro:
 
 
 class TestCheckOpenCLMesa:
-    def test_opencl_mesa_installed(self):
+    def test_opencl_mesa_installed(self) -> None:
         state = _make_state(opencl_drivers=["opencl-mesa", "opencl-nvidia"])
         results = check_opencl_mesa(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_opencl_mesa_not_installed(self):
+    def test_opencl_mesa_not_installed(self) -> None:
         state = _make_state(opencl_drivers=["opencl-nvidia"])
         results = check_opencl_mesa(state)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
 
 class TestCheckGPUPresence:
-    def test_nvidia_gpu_present(self):
+    def test_nvidia_gpu_present(self) -> None:
         state = _make_state(gpus=[NVIDIA_GPU])
         results = check_gpu_presence(state)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
-    def test_amd_gpu_present(self):
+    def test_amd_gpu_present(self) -> None:
         state = _make_state(gpus=[AMD_NAVI_GPU])
         results = check_gpu_presence(state)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
-    def test_intel_only(self):
+    def test_intel_only(self) -> None:
         state = _make_state(gpus=[INTEL_GPU])
         results = check_gpu_presence(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_no_gpus(self):
+    def test_no_gpus(self) -> None:
         state = _make_state(gpus=[])
         results = check_gpu_presence(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_multiple_intel_gpus(self):
+    def test_multiple_intel_gpus(self) -> None:
         intel2 = INTEL_GPU.model_copy(update={"pci_slot": "0000:00:12.0"})
         state = _make_state(gpus=[INTEL_GPU, intel2])
         results = check_gpu_presence(state)
         assert any(r.status == CheckStatus.FAIL and "Intel" in r.message for r in results)
 
-    def test_multiple_nvidia_gpus(self):
+    def test_multiple_nvidia_gpus(self) -> None:
         nvidia2 = NVIDIA_GPU.model_copy(update={"pci_slot": "0000:02:00.0"})
         state = _make_state(gpus=[NVIDIA_GPU, nvidia2])
         results = check_gpu_presence(state)
         assert any(r.status == CheckStatus.FAIL and "NVIDIA" in r.message for r in results)
 
-    def test_intel_plus_nvidia_ok(self):
+    def test_intel_plus_nvidia_ok(self) -> None:
         state = _make_state(gpus=[INTEL_GPU, NVIDIA_GPU])
         results = check_gpu_presence(state)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
-    def test_multiple_amd_gpus_warns(self):
+    def test_multiple_amd_gpus_warns(self) -> None:
         amd2 = AMD_NAVI_GPU.model_copy(update={"pci_slot": "0000:02:00.0"})
         state = _make_state(gpus=[AMD_NAVI_GPU, amd2])
         results = check_gpu_presence(state)
@@ -97,83 +97,83 @@ class TestCheckGPUPresence:
 
 
 class TestCheckGPUConflict:
-    def test_amd_and_nvidia(self):
+    def test_amd_and_nvidia(self) -> None:
         state = _make_state(gpus=[AMD_NAVI_GPU, NVIDIA_GPU])
         results = check_gpu_conflict(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_amd_only(self):
+    def test_amd_only(self) -> None:
         state = _make_state(gpus=[AMD_NAVI_GPU])
         results = check_gpu_conflict(state)
         assert len(results) == 0
 
-    def test_nvidia_only(self):
+    def test_nvidia_only(self) -> None:
         state = _make_state(gpus=[NVIDIA_GPU])
         results = check_gpu_conflict(state)
         assert len(results) == 0
 
 
 class TestCheckGLVendor:
-    def test_gl_vendor_present(self):
+    def test_gl_vendor_present(self) -> None:
         state = _make_state(gl_vendor="NVIDIA Corporation")
         results = check_gl_vendor(state)
         assert len(results) == 0
 
-    def test_gl_vendor_empty(self):
+    def test_gl_vendor_empty(self) -> None:
         state = _make_state(gl_vendor="")
         results = check_gl_vendor(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
 
 class TestCheckGLRenderer:
-    def test_hardware_renderer_present(self):
+    def test_hardware_renderer_present(self) -> None:
         state = _make_state(gl_renderer="NVIDIA GeForce RTX 2070 SUPER")
         results = check_gl_renderer(state)
         assert len(results) == 0
 
-    def test_software_renderer_fails(self):
+    def test_software_renderer_fails(self) -> None:
         state = _make_state(gl_renderer="llvmpipe (LLVM 18.1.8, 256 bits)")
         results = check_gl_renderer(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
 
 class TestCheckOpenCLPlatforms:
-    def test_valid_platform_with_devices(self):
+    def test_valid_platform_with_devices(self) -> None:
         state = _make_state(opencl_platforms=[ROC_PLATFORM])
         results = check_opencl_platforms(state)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
-    def test_clover_only(self):
+    def test_clover_only(self) -> None:
         state = _make_state(opencl_platforms=[CLOVER_PLATFORM])
         results = check_opencl_platforms(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_no_platforms(self):
+    def test_no_platforms(self) -> None:
         state = _make_state(opencl_platforms=[])
         results = check_opencl_platforms(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_platform_with_no_devices(self):
+    def test_platform_with_no_devices(self) -> None:
         empty_platform = NVIDIA_CL_PLATFORM.model_copy(update={"devices": []})
         state = _make_state(opencl_platforms=[empty_platform])
         results = check_opencl_platforms(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_pocl_platform_is_generic_usable_platform(self):
+    def test_pocl_platform_is_generic_usable_platform(self) -> None:
         state = _make_state(opencl_platforms=[POCL_PLATFORM])
         results = check_opencl_platforms(state)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
 
 class TestHasVendorOpenCLPlatform:
-    def test_matches_amd_platform(self):
+    def test_matches_amd_platform(self) -> None:
         state = _make_state(opencl_platforms=[ROC_PLATFORM])
         assert has_vendor_opencl_platform(state, GPUVendor.AMD) is True
 
-    def test_matches_nvidia_platform(self):
+    def test_matches_nvidia_platform(self) -> None:
         state = _make_state(opencl_platforms=[NVIDIA_CL_PLATFORM])
         assert has_vendor_opencl_platform(state, GPUVendor.NVIDIA) is True
 
-    def test_generic_vendor_uses_any_usable_platform(self):
+    def test_generic_vendor_uses_any_usable_platform(self) -> None:
         state = _make_state(opencl_platforms=[POCL_PLATFORM])
         assert has_vendor_opencl_platform(state, GPUVendor.INTEL) is True

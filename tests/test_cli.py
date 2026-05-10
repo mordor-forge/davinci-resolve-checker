@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from unittest.mock import patch
+from collections.abc import Iterator
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -10,7 +11,7 @@ from tests.conftest import _make_state
 
 
 @pytest.fixture()
-def mock_probe_and_checks():
+def mock_probe_and_checks() -> Iterator[MagicMock]:
     state = _make_state(distro_id="arch", distro_name="Arch Linux")
 
     with (
@@ -24,12 +25,12 @@ def mock_probe_and_checks():
 
 
 class TestCLI:
-    def test_default_command_passes(self, mock_probe_and_checks):
+    def test_default_command_passes(self, mock_probe_and_checks) -> None:
         with pytest.raises(SystemExit) as exc_info:
             app([])
         assert exc_info.value.code == 0
 
-    def test_fail_exits_nonzero(self):
+    def test_fail_exits_nonzero(self) -> None:
         state = _make_state()
         with (
             patch("davinci_resolve_checker.cli.probe_system", return_value=state),
@@ -42,20 +43,20 @@ class TestCLI:
             app([])
         assert exc_info.value.code == 1
 
-    def test_json_flag(self, capsys, mock_probe_and_checks):
+    def test_json_flag(self, capsys, mock_probe_and_checks) -> None:
         with pytest.raises(SystemExit):
             app(["--json"])
         captured = capsys.readouterr()
         assert '"results"' in captured.out
 
-    def test_pro_flag_forwarded(self, mock_probe_and_checks):
+    def test_pro_flag_forwarded(self, mock_probe_and_checks) -> None:
         with pytest.raises(SystemExit):
             app(["--pro"])
         mock_probe_and_checks.assert_called_once()
         _, kwargs = mock_probe_and_checks.call_args
         assert kwargs.get("pro_stack") is True
 
-    def test_fail_fast_flag_forwarded(self, mock_probe_and_checks):
+    def test_fail_fast_flag_forwarded(self, mock_probe_and_checks) -> None:
         with pytest.raises(SystemExit):
             app(["--fail-fast"])
         _, kwargs = mock_probe_and_checks.call_args

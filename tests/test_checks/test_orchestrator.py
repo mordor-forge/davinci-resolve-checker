@@ -15,25 +15,25 @@ from tests.conftest import (
 
 
 class TestRunAllChecks:
-    def test_nvidia_desktop_passes(self, nvidia_desktop):
+    def test_nvidia_desktop_passes(self, nvidia_desktop) -> None:
         results = run_all_checks(nvidia_desktop)
         assert any(r.status == CheckStatus.PASS for r in results)
         assert all(r.status != CheckStatus.FAIL for r in results)
 
-    def test_amd_desktop_passes(self, amd_desktop):
+    def test_amd_desktop_passes(self, amd_desktop) -> None:
         results = run_all_checks(amd_desktop)
         assert any(r.status == CheckStatus.PASS for r in results)
 
-    def test_intel_only_fails(self, intel_only):
+    def test_intel_only_fails(self, intel_only) -> None:
         results = run_all_checks(intel_only)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_unsupported_distro_fails(self):
+    def test_unsupported_distro_fails(self) -> None:
         state = _make_state(distro_id="ubuntu", distro_name="Ubuntu")
         results = run_all_checks(state)
         assert any(r.status == CheckStatus.FAIL for r in results)
 
-    def test_fail_fast_stops_early(self):
+    def test_fail_fast_stops_early(self) -> None:
         intel2 = INTEL_GPU.model_copy(update={"pci_slot": "0000:00:12.0"})
         state = _make_state(gpus=[INTEL_GPU, intel2])
         results_normal = run_all_checks(state, fail_fast=False)
@@ -42,13 +42,13 @@ class TestRunAllChecks:
         assert len(results_fast) == 1
         assert results_fast[0].status == CheckStatus.FAIL
 
-    def test_pro_stack_flag_forwarded(self, amd_desktop):
+    def test_pro_stack_flag_forwarded(self, amd_desktop) -> None:
         with patch("davinci_resolve_checker.checks.check_amd", return_value=[]) as mock_check_amd:
             run_all_checks(amd_desktop, pro_stack=True)
         _, kwargs = mock_check_amd.call_args
         assert kwargs.get("pro_stack") is True
 
-    def test_global_failures_suppress_vendor_passes(self):
+    def test_global_failures_suppress_vendor_passes(self) -> None:
         state = _make_state(
             gpus=[AMD_NAVI_GPU, NVIDIA_GPU],
             opencl_drivers=["rocm-opencl-runtime", "opencl-nvidia"],
@@ -61,7 +61,7 @@ class TestRunAllChecks:
         assert any(r.status == CheckStatus.FAIL for r in results)
         assert all(r.status != CheckStatus.PASS for r in results)
 
-    def test_fail_fast_stops_after_amd_failure(self):
+    def test_fail_fast_stops_after_amd_failure(self) -> None:
         state = _make_state(
             gpus=[AMD_NAVI_GPU],
             opencl_drivers=[],
@@ -73,7 +73,7 @@ class TestRunAllChecks:
         assert len(results) == 1
         assert results[0].status == CheckStatus.FAIL
 
-    def test_fail_fast_stops_after_nvidia_failure(self):
+    def test_fail_fast_stops_after_nvidia_failure(self) -> None:
         state = _make_state(
             gpus=[NVIDIA_GPU],
             opencl_drivers=[],

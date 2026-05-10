@@ -14,7 +14,7 @@ from davinci_resolve_checker.models import (
 
 
 class TestGPUVendor:
-    def test_vendor_values(self):
+    def test_vendor_values(self) -> None:
         assert GPUVendor.INTEL == "Intel Corporation"
         assert GPUVendor.AMD == "Advanced Micro Devices, Inc. [AMD/ATI]"
         assert GPUVendor.NVIDIA == "NVIDIA Corporation"
@@ -34,7 +34,7 @@ class TestChassisType:
             ChassisType.SUB_NOTEBOOK,
         ],
     )
-    def test_mobile_types(self, chassis: ChassisType):
+    def test_mobile_types(self, chassis: ChassisType) -> None:
         assert chassis.is_mobile is True
         assert chassis.is_desktop is False
 
@@ -49,21 +49,21 @@ class TestChassisType:
             ChassisType.OTHER,
         ],
     )
-    def test_desktop_types(self, chassis: ChassisType):
+    def test_desktop_types(self, chassis: ChassisType) -> None:
         assert chassis.is_desktop is True
         assert chassis.is_mobile is False
 
-    def test_unsupported_chassis(self):
+    def test_unsupported_chassis(self) -> None:
         assert ChassisType.BLADE.is_mobile is False
         assert ChassisType.BLADE.is_desktop is False
 
-    def test_chassis_from_string(self):
+    def test_chassis_from_string(self) -> None:
         assert ChassisType("Laptop") == ChassisType.LAPTOP
         assert ChassisType("Mini PC") == ChassisType.MINI_PC
 
 
 class TestGPUDevice:
-    def test_is_pre_vega_ellesmere(self):
+    def test_is_pre_vega_ellesmere(self) -> None:
         gpu = GPUDevice(
             name="Ellesmere [Radeon RX 470/480/570/580]",
             vendor=GPUVendor.AMD,
@@ -74,7 +74,7 @@ class TestGPUDevice:
         )
         assert gpu.is_pre_vega is True
 
-    def test_is_pre_vega_navi(self):
+    def test_is_pre_vega_navi(self) -> None:
         gpu = GPUDevice(
             name="Navi 23 [Radeon RX 6600]",
             vendor=GPUVendor.AMD,
@@ -86,7 +86,7 @@ class TestGPUDevice:
         assert gpu.is_pre_vega is False
 
     @pytest.mark.parametrize("codename", ["Vega", "Cezanne", "Raphael", "Barcelo", "Rembrandt"])
-    def test_is_pre_vega_modern_codenames(self, codename: str):
+    def test_is_pre_vega_modern_codenames(self, codename: str) -> None:
         gpu = GPUDevice(
             name=f"{codename} [Some GPU]",
             vendor=GPUVendor.AMD,
@@ -97,7 +97,7 @@ class TestGPUDevice:
         )
         assert gpu.is_pre_vega is False
 
-    def test_is_pre_vega_unknown_amd(self):
+    def test_is_pre_vega_unknown_amd(self) -> None:
         gpu = GPUDevice(
             name="Some Unknown AMD GPU",
             vendor=GPUVendor.AMD,
@@ -108,7 +108,7 @@ class TestGPUDevice:
         )
         assert gpu.is_pre_vega is None
 
-    def test_is_pre_vega_nvidia_returns_none(self):
+    def test_is_pre_vega_nvidia_returns_none(self) -> None:
         gpu = GPUDevice(
             name="RTX 2070 SUPER",
             vendor=GPUVendor.NVIDIA,
@@ -119,7 +119,7 @@ class TestGPUDevice:
         )
         assert gpu.is_pre_vega is None
 
-    def test_is_pre_vega_intel_returns_none(self):
+    def test_is_pre_vega_intel_returns_none(self) -> None:
         gpu = GPUDevice(
             name="UHD Graphics 630",
             vendor=GPUVendor.INTEL,
@@ -132,7 +132,7 @@ class TestGPUDevice:
 
 
 class TestOpenCLPlatform:
-    def test_is_orca(self):
+    def test_is_orca(self) -> None:
         platform = OpenCLPlatform(
             name="AMD Accelerated Parallel Processing",
             icd_suffix="AMD",
@@ -142,7 +142,7 @@ class TestOpenCLPlatform:
         assert platform.is_orca is True
         assert platform.is_roc is False
 
-    def test_is_roc(self):
+    def test_is_roc(self) -> None:
         platform = OpenCLPlatform(
             name="AMD Accelerated Parallel Processing",
             icd_suffix="AMD",
@@ -152,7 +152,7 @@ class TestOpenCLPlatform:
         assert platform.is_roc is True
         assert platform.is_orca is False
 
-    def test_non_amd_platform(self):
+    def test_non_amd_platform(self) -> None:
         platform = OpenCLPlatform(
             name="NVIDIA CUDA",
             icd_suffix="NV",
@@ -165,7 +165,7 @@ class TestOpenCLPlatform:
         assert platform.is_amd is False
         assert platform.has_devices is False
 
-    def test_clover_platform(self):
+    def test_clover_platform(self) -> None:
         platform = OpenCLPlatform(
             name="Clover",
             icd_suffix="MESA",
@@ -176,7 +176,7 @@ class TestOpenCLPlatform:
 
 
 class TestSystemState:
-    def test_serialization_roundtrip(self):
+    def test_serialization_roundtrip(self) -> None:
         state = SystemState(
             distro_id="arch",
             distro_name="Arch Linux",
@@ -202,7 +202,7 @@ class TestSystemState:
         restored = SystemState.model_validate_json(json_str)
         assert restored == state
 
-    def test_defaults(self):
+    def test_defaults(self) -> None:
         state = SystemState(
             distro_id="arch",
             distro_name="Arch Linux",
@@ -220,11 +220,11 @@ class TestSystemState:
 
 
 class TestCheckResult:
-    def test_pass_result(self):
+    def test_pass_result(self) -> None:
         result = CheckResult(status=CheckStatus.PASS, message="All good")
         assert result.suggestion is None
 
-    def test_fail_with_suggestion(self):
+    def test_fail_with_suggestion(self) -> None:
         result = CheckResult(
             status=CheckStatus.FAIL,
             message="Missing driver",

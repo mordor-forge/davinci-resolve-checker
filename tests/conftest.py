@@ -30,7 +30,7 @@ def _make_gpu(
     )
 
 
-def _make_state(**overrides) -> SystemState:
+def _make_state(**overrides: object) -> SystemState:
     defaults = {
         "distro_id": "arch",
         "distro_name": "Arch Linux",

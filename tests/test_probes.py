@@ -8,26 +8,26 @@ from davinci_resolve_checker.models import ChassisType
 
 class TestProbeChassis:
     @patch("builtins.open", mock_open(read_data="3\n"))
-    def test_probe_chassis_desktop(self):
+    def test_probe_chassis_desktop(self) -> None:
         from davinci_resolve_checker.probes.system import probe_chassis
 
         assert probe_chassis() == ChassisType.DESKTOP
 
     @patch("builtins.open", mock_open(read_data="9\n"))
-    def test_probe_chassis_laptop(self):
+    def test_probe_chassis_laptop(self) -> None:
         from davinci_resolve_checker.probes.system import probe_chassis
 
         assert probe_chassis() == ChassisType.LAPTOP
 
     @patch("builtins.open", mock_open(read_data="35\n"))
-    def test_probe_chassis_mini_pc(self):
+    def test_probe_chassis_mini_pc(self) -> None:
         from davinci_resolve_checker.probes.system import probe_chassis
 
         assert probe_chassis() == ChassisType.MINI_PC
 
 
 class TestProbeDistro:
-    def test_probe_distro(self):
+    def test_probe_distro(self) -> None:
         with patch("davinci_resolve_checker.probes.system.distro") as mock_distro:
             mock_distro.id.return_value = "arch"
             mock_distro.name.return_value = "Arch Linux"
@@ -40,7 +40,7 @@ class TestProbeDistro:
 
 
 class TestProbeOpenCLDrivers:
-    def test_probe_opencl_drivers(self):
+    def test_probe_opencl_drivers(self) -> None:
         with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(
                 args="",
@@ -53,7 +53,7 @@ class TestProbeOpenCLDrivers:
             drivers = probe_opencl_drivers()
             assert drivers == ["opencl-nvidia", "rocm-opencl-runtime"]
 
-    def test_probe_opencl_drivers_none_found(self):
+    def test_probe_opencl_drivers_none_found(self) -> None:
         with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
 
@@ -63,13 +63,13 @@ class TestProbeOpenCLDrivers:
 
 
 class TestProbeRocEnablePreVega:
-    def test_probe_roc_enable_pre_vega_set(self):
+    def test_probe_roc_enable_pre_vega_set(self) -> None:
         from davinci_resolve_checker.probes.system import probe_roc_enable_pre_vega
 
         with patch.dict("os.environ", {"ROC_ENABLE_PRE_VEGA": "1"}):
             assert probe_roc_enable_pre_vega() is True
 
-    def test_probe_roc_enable_pre_vega_unset(self):
+    def test_probe_roc_enable_pre_vega_unset(self) -> None:
         from davinci_resolve_checker.probes.system import probe_roc_enable_pre_vega
 
         with patch.dict("os.environ", {}, clear=True):
@@ -77,7 +77,7 @@ class TestProbeRocEnablePreVega:
 
 
 class TestProbeOpenCLNvidiaInstalled:
-    def test_installed(self):
+    def test_installed(self) -> None:
         with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(
                 args="", returncode=0, stdout="opencl-nvidia\n"
@@ -87,7 +87,7 @@ class TestProbeOpenCLNvidiaInstalled:
 
             assert probe_opencl_nvidia_installed() is True
 
-    def test_not_installed(self):
+    def test_not_installed(self) -> None:
         with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
 
@@ -97,7 +97,7 @@ class TestProbeOpenCLNvidiaInstalled:
 
 
 class TestProbeInstalledDrPackage:
-    def test_installed(self):
+    def test_installed(self) -> None:
         with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(
                 args="", returncode=0, stdout="davinci-resolve 19.0-1\n"
@@ -107,7 +107,7 @@ class TestProbeInstalledDrPackage:
 
             assert probe_installed_dr_package() == "davinci-resolve 19.0-1"
 
-    def test_not_installed(self):
+    def test_not_installed(self) -> None:
         with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
 
@@ -117,7 +117,7 @@ class TestProbeInstalledDrPackage:
 
 
 class TestProbePackageVersions:
-    def test_found(self):
+    def test_found(self) -> None:
         with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(args="", returncode=0, stdout="6.1.0\n")
 
@@ -126,7 +126,7 @@ class TestProbePackageVersions:
             versions = probe_package_versions(["opencl-amd"])
             assert versions == {"opencl-amd": "6.1.0"}
 
-    def test_not_found(self):
+    def test_not_found(self) -> None:
         with patch("davinci_resolve_checker.probes.system.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
 
@@ -136,7 +136,7 @@ class TestProbePackageVersions:
 
 
 class TestProbeGPUs:
-    def test_probe_gpus_filters_non_gpu(self):
+    def test_probe_gpus_filters_non_gpu(self) -> None:
         from unittest.mock import MagicMock
 
         mock_device = MagicMock()
@@ -151,7 +151,7 @@ class TestProbeGPUs:
             gpus = probe_gpus()
             assert gpus == []
 
-    def test_probe_gpus_filters_vfio(self):
+    def test_probe_gpus_filters_vfio(self) -> None:
         from unittest.mock import MagicMock
 
         mock_device = MagicMock()
@@ -166,7 +166,7 @@ class TestProbeGPUs:
             gpus = probe_gpus()
             assert gpus == []
 
-    def test_probe_gpus_filters_unknown_vendor(self):
+    def test_probe_gpus_filters_unknown_vendor(self) -> None:
         from unittest.mock import MagicMock
 
         mock_device = MagicMock()
@@ -182,7 +182,7 @@ class TestProbeGPUs:
             gpus = probe_gpus()
             assert gpus == []
 
-    def test_probe_gpus_valid_nvidia(self):
+    def test_probe_gpus_valid_nvidia(self) -> None:
         from unittest.mock import MagicMock
 
         mock_device = MagicMock()
@@ -202,7 +202,7 @@ class TestProbeGPUs:
             assert len(gpus) == 1
             assert gpus[0].name == "RTX 2070 SUPER"
 
-    def test_probe_gpus_no_kernel_modules(self):
+    def test_probe_gpus_no_kernel_modules(self) -> None:
         from unittest.mock import MagicMock
 
         mock_device = MagicMock()
@@ -224,7 +224,7 @@ class TestProbeGPUs:
 
 
 class TestProbeGLInfo:
-    def test_probe_gl_info(self):
+    def test_probe_gl_info(self) -> None:
         with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(
                 args=["glxinfo", "-B"],
@@ -242,7 +242,7 @@ class TestProbeGLInfo:
             assert vendor == "NVIDIA Corporation"
             assert renderer == "NVIDIA GeForce RTX 2070 SUPER"
 
-    def test_probe_gl_info_falls_back_to_eglinfo(self):
+    def test_probe_gl_info_falls_back_to_eglinfo(self) -> None:
         with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
             mock_run.side_effect = [
                 CompletedProcess(args=["glxinfo", "-B"], returncode=1, stdout=""),
@@ -263,7 +263,7 @@ class TestProbeGLInfo:
             assert vendor == "NVIDIA Corporation"
             assert renderer == "NVIDIA GeForce RTX 2070 SUPER/PCIe/SSE2"
 
-    def test_probe_gl_info_exception(self):
+    def test_probe_gl_info_exception(self) -> None:
         with patch(
             "davinci_resolve_checker.probes.gpu.subprocess.run", side_effect=OSError("boom")
         ):
@@ -273,7 +273,7 @@ class TestProbeGLInfo:
             assert vendor == ""
             assert renderer == ""
 
-    def test_probe_gl_info_missing_glxinfo(self):
+    def test_probe_gl_info_missing_glxinfo(self) -> None:
         with patch("davinci_resolve_checker.probes.gpu.subprocess.run") as mock_run:
             mock_run.side_effect = [
                 CompletedProcess(args=["glxinfo", "-B"], returncode=1, stdout=""),
@@ -288,7 +288,7 @@ class TestProbeGLInfo:
 
 
 class TestProbeOpenCL:
-    def test_probe_opencl_platforms(self):
+    def test_probe_opencl_platforms(self) -> None:
         import json as json_mod
 
         clinfo_data = {
@@ -322,7 +322,7 @@ class TestProbeOpenCL:
             assert platforms[0].name == "NVIDIA CUDA"
             assert len(platforms[0].devices) == 1
 
-    def test_probe_opencl_platforms_failure(self):
+    def test_probe_opencl_platforms_failure(self) -> None:
         with patch("davinci_resolve_checker.probes.opencl.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(args="", returncode=1, stdout="")
 
@@ -330,7 +330,7 @@ class TestProbeOpenCL:
 
             assert probe_opencl_platforms() == []
 
-    def test_probe_opencl_platforms_bad_json(self):
+    def test_probe_opencl_platforms_bad_json(self) -> None:
         with patch("davinci_resolve_checker.probes.opencl.subprocess.run") as mock_run:
             mock_run.return_value = CompletedProcess(args="", returncode=0, stdout="not valid json")
 
@@ -340,7 +340,7 @@ class TestProbeOpenCL:
 
 
 class TestProbeSystem:
-    def test_probe_system_integrates_all_probes(self):
+    def test_probe_system_integrates_all_probes(self) -> None:
         with (
             patch(
                 "davinci_resolve_checker.probes.probe_chassis",
