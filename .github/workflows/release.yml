@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: pypi
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v6
       - run: uvx --with tox-uv tox run
       - name: Verify tag matches package version
